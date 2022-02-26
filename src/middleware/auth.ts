@@ -16,8 +16,7 @@ export const verifyAuthToken = (
   try {
     const authorizationHeader: string | undefined = req.headers.authorization;
     const token = authorizationHeader ? authorizationHeader.split(" ")[1] : "";
-
-    const decoded = jwt.verify(token, process.env.TOKEN_SECRET);
+    const decoded = jwt.verify(token, process.env.TOKEN_SECRET as string);
     res.locals.userData = decoded;
     next();
   } catch (err) {

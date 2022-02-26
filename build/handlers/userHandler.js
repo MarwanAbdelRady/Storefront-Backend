@@ -27,9 +27,9 @@ const show = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 const create = (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = {
-        firstName: _req.body.firstName,
-        lastName: _req.body.lastName,
-        password: _req.body.password,
+        firstname: _req.body.firstname,
+        lastname: _req.body.lastname,
+        user_password: _req.body.user_password,
     };
     const newUser = yield store.create(user);
     const token = jsonwebtoken_1.default.sign({ user: newUser }, database_1.process.env.TOKEN_SECRET);
@@ -53,21 +53,21 @@ const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 });
 const authenticate = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const firstName = req.body.firstName;
-        const lastName = req.body.lastName;
-        const password = req.body.password;
-        if (firstName === undefined ||
-            lastName === undefined ||
-            password === undefined) {
+        const firstname = req.body.firstname;
+        const lastname = req.body.lastname;
+        const user_password = req.body.user_password;
+        if (firstname === undefined ||
+            lastname === undefined ||
+            user_password === undefined) {
             res.status(400);
-            res.send("Some required parameters are missing! eg. :firstname, :lastname, :password");
+            res.send("Some required parameters are missing! eg. :firstname, :lastname, :user_password");
             return false;
         }
-        const tempUser = { firstName, lastName, password };
-        const user = yield store.authenticateUser(tempUser);
+        const tempUser = { firstname, lastname, user_password };
+        const user = yield store.authenticateUser(tempUser.firstname, tempUser.lastname, tempUser.user_password);
         if (user === null) {
             res.status(401);
-            res.send(`The given password is incorrect for ${firstName} ${lastName}.`);
+            res.send(`The given user_password is incorrect for ${firstname} ${lastname}.`);
             return false;
         }
         res.json(user);

@@ -20,9 +20,9 @@ describe("FullOrder Model", () => {
 
   beforeAll(async () => {
     const user: FullUser = await us.create({
-      firstName: "Hans",
-      lastName: "Meier",
-      password: "password123",
+      firstname: "Hans",
+      lastname: "Meier",
+      user_password: "password123",
     });
 
     user_id = user.id;

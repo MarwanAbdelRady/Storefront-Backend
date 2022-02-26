@@ -1,4 +1,4 @@
-import express, { request, Request, Response } from "express";
+import express, { Request, Response } from "express";
 import { User, UserStore } from "../models/user";
 import jwt from "jsonwebtoken";
 import { process } from "../database";
@@ -18,9 +18,9 @@ const show = async (req: Request, res: Response) => {
 
 const create = async (_req: Request, res: Response) => {
   const user: User = {
-    firstName: _req.body.firstName,
-    lastName: _req.body.lastName,
-    password: _req.body.password,
+    firstname: _req.body.firstname,
+    lastname: _req.body.lastname,
+    user_password: _req.body.user_password,
   };
   const newUser = await store.create(user);
   const token = jwt.sign({ user: newUser }, process.env.TOKEN_SECRET);
@@ -48,27 +48,33 @@ const deleteUser = async (req: Request, res: Response) => {
 
 const authenticate = async (req: Request, res: Response) => {
   try {
-    const firstName = req.body.firstName as unknown as string;
-    const lastName = req.body.lastName as unknown as string;
-    const password = req.body.password as unknown as string;
+    const firstname = req.body.firstname as unknown as string;
+    const lastname = req.body.lastname as unknown as string;
+    const user_password = req.body.user_password as unknown as string;
 
     if (
-      firstName === undefined ||
-      lastName === undefined ||
-      password === undefined
+      firstname === undefined ||
+      lastname === undefined ||
+      user_password === undefined
     ) {
       res.status(400);
       res.send(
-        "Some required parameters are missing! eg. :firstname, :lastname, :password"
+        "Some required parameters are missing! eg. :firstname, :lastname, :user_password"
       );
       return false;
     }
-    const tempUser = { firstName, lastName, password };
-    const user: User | null = await store.authenticateUser(tempUser);
+    const tempUser = { firstname, lastname, user_password };
+    const user: User | null = await store.authenticateUser(
+      tempUser.firstname,
+      tempUser.lastname,
+      tempUser.user_password
+    );
 
     if (user === null) {
       res.status(401);
-      res.send(`The given password is incorrect for ${firstName} ${lastName}.`);
+      res.send(
+        `The given user_password is incorrect for ${firstname} ${lastname}.`
+      );
 
       return false;
     }

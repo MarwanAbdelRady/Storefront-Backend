@@ -16,14 +16,13 @@ const supertest_1 = __importDefault(require("supertest"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const server_1 = require("../../server");
 const request = (0, supertest_1.default)(server_1.app);
-const SECRET = process.env.TOKEN_SECRET;
 describe("Order Handler", () => {
     let token, order, user_id, product_id, order_id;
     beforeAll(() => __awaiter(void 0, void 0, void 0, function* () {
         const userData = {
-            firstName: "Order",
-            lastName: "Tester",
-            password: "password123",
+            firstname: "Order",
+            lastname: "Tester",
+            user_password: "password123",
         };
         const productData = {
             product_name: "CodeMaster 199",
@@ -32,7 +31,7 @@ describe("Order Handler", () => {
         const { body: userBody } = yield request.post("/users").send(userData);
         token = userBody;
         // @ts-ignore
-        const { user } = jsonwebtoken_1.default.verify(token, SECRET);
+        const { user } = jsonwebtoken_1.default.verify(token, process.env.TOKEN_SECRET);
         user_id = user.id;
         const { body: productBody } = yield request
             .post("/products")

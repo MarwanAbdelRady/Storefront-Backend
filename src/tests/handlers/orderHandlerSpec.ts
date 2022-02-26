@@ -1,5 +1,5 @@
 import supertest from "supertest";
-import jwt, { Secret } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 
 import { app } from "../../server";
 import { Order } from "../../models/order";
@@ -7,7 +7,6 @@ import { User } from "../../models/user";
 import { Product } from "../../models/product";
 
 const request = supertest(app);
-const SECRET = process.env.TOKEN_SECRET as Secret;
 
 describe("Order Handler", () => {
   let token: string,
@@ -18,9 +17,9 @@ describe("Order Handler", () => {
 
   beforeAll(async () => {
     const userData: User = {
-      firstName: "Order",
-      lastName: "Tester",
-      password: "password123",
+      firstname: "Order",
+      lastname: "Tester",
+      user_password: "password123",
     };
     const productData: Product = {
       product_name: "CodeMaster 199",
@@ -32,7 +31,7 @@ describe("Order Handler", () => {
     token = userBody;
 
     // @ts-ignore
-    const { user } = jwt.verify(token, SECRET);
+    const { user } = jwt.verify(token, process.env.TOKEN_SECRET);
     user_id = user.id;
 
     const { body: productBody } = await request

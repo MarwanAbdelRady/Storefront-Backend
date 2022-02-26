@@ -29,9 +29,9 @@ describe("FullOrder Model", () => {
     }
     beforeAll(() => __awaiter(void 0, void 0, void 0, function* () {
         const user = yield us.create({
-            firstName: "Hans",
-            lastName: "Meier",
-            password: "password123",
+            firstname: "Hans",
+            lastname: "Meier",
+            user_password: "password123",
         });
         user_id = user.id;
         const product = yield ps.create({

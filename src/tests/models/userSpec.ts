@@ -1,13 +1,12 @@
-/*
 import { User, FullUser, UserStore } from "../../models/user";
 
 const us = new UserStore();
 
 describe("User Model", () => {
   const user: User = {
-    firstName: "Hans",
-    lastName: "Meier",
-    password: "password123",
+    firstname: "Hans",
+    lastname: "Meier",
+    user_password: "password123",
   };
 
   async function createUser(user: User) {
@@ -36,12 +35,11 @@ describe("User Model", () => {
 
   it("create method should create a user", async () => {
     const createdUser: FullUser = await createUser(user);
-    console.log(createdUser.firstName);
     if (createdUser) {
-      const { firstName, lastName } = createdUser;
+      const { firstname, lastname } = createdUser;
 
-      expect(firstName).toBe(user.firstName);
-      expect(lastName).toBe(user.lastName);
+      expect(firstname).toBe(user.firstname);
+      expect(lastname).toBe(user.lastname);
     }
 
     await deleteUser(createdUser.id);
@@ -75,19 +73,22 @@ describe("User Model", () => {
     expect(userList).toEqual([]);
   });
 
-  it("authenticates the user with a password", async () => {
+  it("authenticates the user with a user_password", async () => {
     const createdUser: FullUser = await createUser(user);
 
-    const userFromDb = await us.authenticateUser(user);
+    const userFromDb = await us.authenticateUser(
+      user.firstname,
+      user.lastname,
+      user.user_password
+    );
 
     if (userFromDb) {
-      const { firstName, lastName } = userFromDb;
+      const { firstname, lastname } = userFromDb;
 
-      expect(firstName).toBe(user.firstName);
-      expect(lastName).toBe(user.lastName);
+      expect(firstname).toBe(user.firstname);
+      expect(lastname).toBe(user.lastname);
     }
 
     await deleteUser(createdUser.id);
   });
 });
-*/

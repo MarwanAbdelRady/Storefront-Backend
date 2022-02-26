@@ -3,7 +3,7 @@ import jwt, { Secret } from "jsonwebtoken";
 
 import { app } from "../../server";
 import { Product } from "../../models/product";
-import { User, FullUser } from "../../models/user";
+import { User } from "../../models/user";
 import { process } from "../../database";
 
 const request = supertest(app);
@@ -19,17 +19,17 @@ describe("Product Handler", () => {
 
   beforeAll(async () => {
     const userData: User = {
-      firstName: "Produkt",
-      lastName: "Tester",
-      password: "password123",
+      firstname: "Produkt",
+      lastname: "Tester",
+      user_password: "password123",
     };
 
     const { body } = await request.post("/users").send(userData);
 
     token = body;
     // @ts-ignore
-    const { user } = jwt.verify(token, process.env.TOKEN_SECRET);
-    userId = user.id;
+    const { user } = jwt.verify(token, SECRET);
+    userId = Number(user.id);
   });
 
   afterAll(async () => {

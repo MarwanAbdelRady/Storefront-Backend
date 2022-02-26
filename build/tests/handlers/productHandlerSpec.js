@@ -26,15 +26,15 @@ describe("Product Handler", () => {
     let token, userId, productId;
     beforeAll(() => __awaiter(void 0, void 0, void 0, function* () {
         const userData = {
-            firstName: "Produkt",
-            lastName: "Tester",
-            password: "password123",
+            firstname: "Produkt",
+            lastname: "Tester",
+            user_password: "password123",
         };
         const { body } = yield request.post("/users").send(userData);
         token = body;
         // @ts-ignore
-        const { user } = jsonwebtoken_1.default.verify(token, database_1.process.env.TOKEN_SECRET);
-        userId = user.id;
+        const { user } = jsonwebtoken_1.default.verify(token, SECRET);
+        userId = Number(user.id);
     }));
     afterAll(() => __awaiter(void 0, void 0, void 0, function* () {
         yield request

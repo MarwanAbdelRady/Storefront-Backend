@@ -57,7 +57,7 @@ const deleteOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 const orderRoute = (app) => {
-    app.get("orders/:userId", show);
+    app.get("/orders/:userId", show);
     app.post("/orders", auth_1.verifyAuthToken, create);
     app.delete("/orders/:id", auth_1.verifyAuthToken, deleteOrder);
 };

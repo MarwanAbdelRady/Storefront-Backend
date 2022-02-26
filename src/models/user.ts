@@ -1,12 +1,11 @@
 /* eslint-disable prettier/prettier */
 import { client, process } from "../database";
 import bcrypt from "bcrypt";
-import { Client } from "pg";
 
 export interface User {
-  firstName: string;
-  lastName: string;
-  password: string;
+  firstname: string;
+  lastname: string;
+  user_password: string;
 }
 
 export interface FullUser extends User {
@@ -40,16 +39,19 @@ export class UserStore {
 
   async create(u: User): Promise<FullUser> {
     try {
-      const { firstName, lastName, password } = u;
+      const { firstname, lastname, user_password } = u;
       const conn = await client.connect();
-      const sql = `INSERT INTO users (firstname, lastname, user_password) VALUES($1, $2, $3) RETURNING *;`;
-      const hash = bcrypt.hashSync(password, Number(process.env.SALT_ROUNDS));
-      const result = await conn.query(sql, [firstName, lastName, hash]);
+      const sql = `INSERT INTO users (firstname, lastname, user_password) VALUES($1, $2, $3) RETURNING *`;
+      const hash = bcrypt.hashSync(
+        user_password + process.env.BCRYPT_PASSWORD,
+        parseInt(process.env.SALT_ROUNDS as string, 10)
+      );
+      const { rows } = await conn.query(sql, [firstname, lastname, hash]);
       conn.release();
-      if (result.rows[0] === undefined) {
-        throw new Error("undefined user");
-      }
-      return result.rows[0];
+      // if (result.rows[0] === undefined) {
+      //   throw new Error("undefined user");
+      // }
+      return rows[0];
     } catch (err) {
       throw new Error(`User could not be created. Error: ${err}`);
     }
@@ -66,24 +68,21 @@ export class UserStore {
       throw new Error(`Could not delete user ${id}. ${err}`);
     }
   }
-  async authenticateUser(u: User): Promise<FullUser | null> {
+  async authenticateUser(
+    firstname: string,
+    lastname: string,
+    user_password: string
+  ): Promise<FullUser | null> {
     try {
-      const { firstName, lastName, password } = u;
-      console.log(firstName);
-      const sql = "SELECT * FROM users WHERE firstname=$1 AND lastname=$2;";
+      // const { firstname, lastname, user_password } = u;
+      const sql = "SELECT * FROM users WHERE firstname=($1) AND lastname=($2);";
       const connection = await client.connect();
-      const { rows } = await connection.query(sql, [
-        firstName,
-        lastName,
-        password,
-      ]);
-      console.log("ugyrtdcvbn" + rows.length);
+      const { rows } = await connection.query(sql, [firstname, lastname]);
       if (rows.length > 0) {
         const user = rows[0];
-        console.log("dunsd" + user.user_password);
         if (
           bcrypt.compareSync(
-            password + process.env.BCRYPT_PASSWORD,
+            user_password + process.env.BCRYPT_PASSWORD,
             user.user_password
           )
         ) {
@@ -95,7 +94,7 @@ export class UserStore {
 
       return null;
     } catch (err) {
-      throw new Error(`Could not find user ${u.firstName}. ${err}`);
+      throw new Error(`Could not find user ${firstname}. ${err}`);
     }
   }
 }

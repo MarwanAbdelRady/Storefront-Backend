@@ -20,14 +20,30 @@ const show = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const product = yield store.show(parseInt(req.params.id));
     res.json(product);
 });
-const create = (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const new_product = {
-        product_name: _req.body.product_name,
-        price: _req.body.price,
-    };
+// const create = async (_req: Request, res: Response) => {
+//   const new_product: FullProduct = {
+//     product_name: _req.body.product_name,
+//     price: _req.body.price,
+//   };
+//   try {
+//     const newProduct = await store.create(new_product);
+//     res.json(newProduct);
+//   } catch (err) {
+//     res.status(400);
+//     res.json(err);
+//   }
+// };
+const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const newProduct = yield store.create(new_product);
-        res.json(newProduct);
+        const product_name = req.body.product_name;
+        const price = req.body.price;
+        if (product_name === undefined || price === undefined) {
+            res.status(400);
+            res.send("Some required parameters are missing! eg. :product_name, :price");
+            return false;
+        }
+        const product = yield store.create({ product_name, price });
+        res.json(product);
     }
     catch (err) {
         res.status(400);
@@ -43,7 +59,7 @@ const deleteProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             return false;
         }
         yield store.delete(id);
-        res.send(`Product with id ${id} successfully deleted.`);
+        res.send(`FullProduct with id ${id} successfully deleted.`);
     }
     catch (e) {
         res.status(400);

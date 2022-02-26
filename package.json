@@ -1,7 +1,6 @@
 {
   "name": "storefrontbackend",
   "version": "1.0.0",
-  "description": "",
   "main": "server.ts",
   "scripts": {
     "pretty": "npx prettier --write ./src/**/*.ts",
@@ -21,8 +20,6 @@
     "dotenv": "^16.0.0",
     "express": "^4.17.3",
     "jsonwebtoken": "^8.5.1",
-    "morgan": "^1.10.0",
-    "rimraf": "^3.0.2",
     "supertest": "^6.2.2"
   },
   "devDependencies": {

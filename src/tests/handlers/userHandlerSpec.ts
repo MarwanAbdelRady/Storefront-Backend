@@ -9,13 +9,13 @@ const SECRET = process.env.TOKEN_SECRET as Secret;
 
 describe("User Handler", () => {
   const userData: User = {
-    firstName: "Hans",
-    lastName: "Meier",
-    password: "password123",
+    firstname: "Hans",
+    lastname: "Meier",
+    user_password: "password123",
   };
 
   let token: string,
-    userId = 1;
+    userId: number = 1;
 
   it("should require authorization on every endpoint", (done) => {
     request.get("/users").then((res) => {
@@ -75,9 +75,9 @@ describe("User Handler", () => {
     request
       .post("/users/auth")
       .send({
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        password: userData.password,
+        firstname: userData.firstname,
+        lastname: userData.lastname,
+        user_password: userData.user_password,
       })
       .set("Authorization", "bearer " + token)
       .then((res) => {
@@ -86,13 +86,13 @@ describe("User Handler", () => {
       });
   });
 
-  it("gets the auth endpoint with wrong password", (done) => {
+  it("gets the auth endpoint with wrong user_password", (done) => {
     request
       .post("/users/auth")
       .send({
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        password: "falsepassword",
+        firstname: userData.firstname,
+        lastname: userData.lastname,
+        user_password: "falsepassword",
       })
       .set("Authorization", "bearer " + token)
       .then((res) => {
