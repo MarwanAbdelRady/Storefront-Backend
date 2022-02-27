@@ -3,24 +3,24 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.app = void 0;
-const express_1 = __importDefault(require("express"));
-const body_parser_1 = __importDefault(require("body-parser"));
-const cors_1 = __importDefault(require("cors"));
-const productHandler_1 = __importDefault(require("./handlers/productHandler"));
-const userHandler_1 = __importDefault(require("./handlers/userHandler"));
-const orderHandler_1 = __importDefault(require("./handlers/orderHandler"));
-exports.app = (0, express_1.default)();
-const address = "0.0.0.0:3000";
-exports.app.use((0, cors_1.default)());
-exports.app.use(body_parser_1.default.json());
-exports.app.get("/", function (req, res) {
-    res.send("Hello World!");
-    console.log(req.body);
+var express_1 = __importDefault(require("express"));
+var body_parser_1 = __importDefault(require("body-parser"));
+var appConfig_1 = __importDefault(require("./configuarations/appConfig"));
+var userHandler_1 = __importDefault(require("./handlers/userHandler"));
+var orderHandler_1 = __importDefault(require("./handlers/orderHandler"));
+var productHandler_1 = __importDefault(require("./handlers/productHandler"));
+var PORT = appConfig_1.default.port || 3000;
+var app = (0, express_1.default)();
+app.use(body_parser_1.default.json());
+app.get('/', function (req, res) {
+    res.json({
+        message: 'Hello World!'
+    });
 });
-(0, productHandler_1.default)(exports.app);
-(0, userHandler_1.default)(exports.app);
-(0, orderHandler_1.default)(exports.app);
-exports.app.listen(3000, function () {
-    console.log(`starting app on: ${address}`);
+(0, userHandler_1.default)(app);
+(0, productHandler_1.default)(app);
+(0, orderHandler_1.default)(app);
+app.listen(PORT, function () {
+    console.log("Server is starting at port: ".concat(PORT));
 });
+exports.default = app;

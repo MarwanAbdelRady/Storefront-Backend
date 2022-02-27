@@ -1,80 +1,42 @@
-import express, { Request, Response } from "express";
-import { FullProduct, ProductStore } from "../models/product";
-import jwt from "jsonwebtoken";
-import { verifyAuthToken } from "../middleware/auth";
+import express, { Request, Response, NextFunction } from 'express';
+import { ProductStore } from '../models/product';
+import verifyAuthToken from '../middleware/auth';
 
-const store = new ProductStore();
+const ps = new ProductStore();
 
-const index = async (_req: Request, res: Response) => {
-  const products = await store.index();
-  res.json(products);
-};
-
-const show = async (req: Request, res: Response) => {
-  const product = await store.show(parseInt(req.params.id));
-  res.json(product);
-};
-
-// const create = async (_req: Request, res: Response) => {
-//   const new_product: FullProduct = {
-//     product_name: _req.body.product_name,
-//     price: _req.body.price,
-//   };
-//   try {
-//     const newProduct = await store.create(new_product);
-//     res.json(newProduct);
-//   } catch (err) {
-//     res.status(400);
-//     res.json(err);
-//   }
-// };
-
-const create = async (req: Request, res: Response) => {
+const index = async (_req: Request, res: Response, next: NextFunction) => {
   try {
-    const product_name = req.body.product_name as unknown as string;
-    const price = req.body.price as unknown as number;
+    const products = await ps.index();
+    res.json(products);
+  } catch (err) {
+    next(err);
+  }
+};
 
-    if (product_name === undefined || price === undefined) {
-      res.status(400);
-      res.send(
-        "Some required parameters are missing! eg. :product_name, :price"
-      );
-      return false;
-    }
-
-    const product: FullProduct = await store.create({ product_name, price });
-
+const show = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id = Number(req.params.id);
+    const product = await ps.show(id);
     res.json(product);
   } catch (err) {
-    res.status(400);
-    res.json(err);
+    next(err);
   }
 };
 
-const deleteProduct = async (req: Request, res: Response) => {
+const create = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const id = req.params.id as unknown as number;
-
-    if (id === undefined) {
-      res.status(400);
-      res.send("Missing required parameter :id.");
-      return false;
-    }
-
-    await store.delete(id);
-
-    res.send(`FullProduct with id ${id} successfully deleted.`);
-  } catch (e) {
-    res.status(400);
-    res.json(e);
+    const { name, price } = req.body;
+    const newProduct = await ps.create(name, price);
+    res.json(newProduct);
+  } catch (err) {
+    next(err);
   }
 };
 
-const productRoute = (app: express.Application) => {
-  app.get("/products", index);
-  app.get("/products/:id", show);
-  app.post("/products", verifyAuthToken, create);
-  app.delete("/products/:id", verifyAuthToken, deleteProduct);
+const productRoutes = (app: express.Application) => {
+  app.get('/products', index);
+  app.get('/products/:id', show);
+  app.post('/products', verifyAuthToken, create);
 };
 
-export default productRoute;
+export default productRoutes;

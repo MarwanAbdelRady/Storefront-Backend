@@ -1,60 +1,75 @@
-import { FullProduct, Product, ProductStore } from "../../models/product";
+/* eslint-disable no-plusplus */
+/* eslint-disable no-await-in-loop */
+import supertest from 'supertest';
+import app from '../../server';
+import { ProductStore } from '../../models/product';
 
 const ps = new ProductStore();
+const request = supertest(app);
 
-describe("Product Model", () => {
-  const product: Product = {
-    product_name: "CodeMaster 3000",
-    price: 2000,
-  };
+// TODO Try to remove beforeAll
+// eslint-disable-next-line no-unused-vars
+let token: string = '';
+beforeAll((done) => {
+  request
+    .post('/users')
+    .send({
+      firstname: 'marwan',
+      lastname: 'abdelrady',
+      password: 'password'
+    })
+    .end((err: any, response: any) => {
+      token = response.body;
+      done();
+    });
+});
 
-  async function createProduct(product: Product) {
-    return ps.create(product);
-  }
-
-  async function deleteProduct(id: number) {
-    return ps.delete(id);
-  }
-
-  it("It should have an index method", () => {
+describe('Product Model', () => {
+  it('should have an index method', () => {
     expect(ps.index).toBeDefined();
   });
 
-  it("It should have a show method", () => {
+  it('should have a show method', () => {
     expect(ps.show).toBeDefined();
   });
 
-  it("It should have a add method", () => {
+  it('should have a create method', () => {
     expect(ps.create).toBeDefined();
   });
 
-  it("add method should add a product", async () => {
-    const createdProduct: FullProduct = await createProduct(product);
+  it('create method should add a product', async () => {
+    let response: unknown;
 
-    expect(createdProduct).toEqual({
-      id: createdProduct.id,
-      product_name: product.product_name,
-      price: product.price,
+    for (let i = 0; i < 4; i++) {
+      response = await ps.create('alpha', 100);
+    }
+    const { id, ...productData } = response as {
+      id: number;
+      name: string;
+      price: number;
+    };
+    expect(productData).toEqual({
+      name: 'alpha',
+      price: 100
     });
-
-    await deleteProduct(createdProduct.id);
   });
 
-  it("index method should return a list of products", async () => {
-    const createdProduct: FullProduct = await createProduct(product);
-    const productList = await ps.index();
+  it('index method should return a list of products', async () => {
+    const result = await ps.index();
 
-    expect(productList).toEqual([createdProduct]);
-
-    await deleteProduct(createdProduct.id);
+    result.forEach((newProduct) => {
+      const { id, ...productData } = newProduct;
+      expect(productData.name).toBeDefined();
+      expect(productData.price).toBeDefined();
+    });
   });
 
-  it("show method should return the correct product", async () => {
-    const createdProduct: FullProduct = await createProduct(product);
-    const productFromDb = await ps.show(createdProduct.id);
-
-    expect(productFromDb).toEqual(createdProduct);
-
-    await deleteProduct(createdProduct.id);
+  it('show method should return the correct product', async () => {
+    const result = await ps.show(1);
+    expect(result).toEqual({
+      id: 1,
+      name: 'alpha',
+      price: 100
+    });
   });
 });

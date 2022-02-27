@@ -1,79 +1,63 @@
-import supertest from "supertest";
-import jwt, { Secret } from "jsonwebtoken";
-
-import { app } from "../../server";
-import { Product } from "../../models/product";
-import { User } from "../../models/user";
-import { process } from "../../database";
+// import { ProductStore } from '../../models/product';
+import supertest from 'supertest';
+import app from '../../server';
 
 const request = supertest(app);
-const SECRET = process.env.TOKEN_SECRET as Secret;
+let token: string = '';
 
-describe("Product Handler", () => {
-  const product: Product = {
-    product_name: "CodeMaster 3000",
-    price: 999,
-  };
-
-  let token: string, userId: number, productId: number;
-
-  beforeAll(async () => {
-    const userData: User = {
-      firstname: "Produkt",
-      lastname: "Tester",
-      user_password: "password123",
-    };
-
-    const { body } = await request.post("/users").send(userData);
-
-    token = body;
-    // @ts-ignore
-    const { user } = jwt.verify(token, SECRET);
-    userId = Number(user.id);
-  });
-
-  afterAll(async () => {
-    await request
-      .delete(`/users/${userId}`)
-      .set("Authorization", "bearer " + token);
-  });
-
-  it("gets the create endpoint", (done) => {
-    request
-      .post("/products")
-      .send(product)
-      .set("Authorization", "bearer " + token)
-      .then((res) => {
-        const { body, status } = res;
-
-        expect(status).toBe(200);
-
-        productId = body.id;
-        done();
-      });
-  });
-
-  it("gets the index endpoint", (done) => {
-    request.get("/products").then((res) => {
-      expect(res.status).toBe(200);
+beforeAll((done) => {
+  request
+    .post('/users')
+    .send({
+      firstname: 'marwan',
+      lastname: 'abdelrady',
+      password: 'password'
+    })
+    .end((err: any, response: any) => {
+      token = response.body;
       done();
+    });
+});
+
+describe('Product Handler', () => {
+  let productId: number;
+
+  it('Should create or add a new product', async () => {
+    const response = await request
+      .post('/products')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        name: 'alpha',
+        price: 100
+      });
+    const { id, ...result } = response.body;
+    productId = id;
+
+    expect(result).toEqual({
+      name: 'alpha',
+      price: 100
     });
   });
 
-  it("gets the read endpoint", (done) => {
-    request.get(`/products/${productId}`).then((res) => {
-      expect(res.status).toBe(200);
-      done();
-    });
+  it('Should return a list of products', async () => {
+    const result = await request.get('/products');
+    result.body.forEach(
+      (product: { id: number; name: string; price: number }) => {
+        const { id, ...productData } = product;
+        expect(productData).toEqual({
+          name: 'alpha',
+          price: 100
+        });
+      }
+    );
   });
 
-  it("gets the delete endpoint", (done) => {
-    request
-      .delete(`/products/${productId}`)
-      .set("Authorization", "bearer " + token)
-      .then((res) => {
-        expect(res.status).toBe(200);
-        done();
-      });
+  it('Should return the correct product', async () => {
+    const result = await request.get(`/products/${productId}`);
+    expect(result.body).toEqual({
+      id: productId,
+      name: 'alpha',
+      price: 100
+    });
   });
 });

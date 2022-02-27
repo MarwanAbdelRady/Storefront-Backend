@@ -1,27 +1,46 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable prettier/prettier */
-import jwt from "jsonwebtoken";
-import { NextFunction, Request, Response } from "express";
-import { process } from "../database";
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import jwt_decode from 'jwt-decode';
+import appConfig from '../configuarations/appConfig';
+import { UserStore, User } from '../models/user';
 
-// export function generate(data: TokenData, expiresIn?: string | number) {
-//   return jwt.sign(data, process.env.TOKEN_SECRET, { expiresIn });
-// }
+const { secret } = appConfig;
+const user = new UserStore();
 
-export const verifyAuthToken = (
+type UserJWTPayload = {
+  us: {
+    id: number;
+    lastname: string;
+    firstname: string;
+  };
+  iat: number;
+};
+
+const verifyAuthToken = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const authorizationHeader: string | undefined = req.headers.authorization;
-    const token = authorizationHeader ? authorizationHeader.split(" ")[1] : "";
-    const decoded = jwt.verify(token, process.env.TOKEN_SECRET as string);
-    res.locals.userData = decoded;
+    const authorizationHeader = req.headers.authorization as string;
+    const token = authorizationHeader.split(' ')[1];
+
+    const validJwt = jwt.verify(token, secret as string);
+
+    if (!validJwt) {
+      throw new Error();
+    }
+    const decoded = jwt.decode(token) as UserJWTPayload;
+
+    const user1: User = await user.show(decoded.us.id as number);
+
+    if (!user1) throw new Error();
+
     next();
-  } catch (err) {
+  } catch (error) {
     res.status(401);
-    res.json("Access denied, invalid token");
-    next(err);
+    res.json('Access denied, token is invalid.');
   }
 };
+
+export default verifyAuthToken;

@@ -1,16 +1,25 @@
-/* eslint-disable prettier/prettier */
-import dotenv from "dotenv";
-import { Pool } from "pg";
+import { Pool } from 'pg';
 
-export const process = require("process");
-
-dotenv.config();
-const { POSTGRES_HOST, POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD } =
-  process.env;
+import databaseConfig from './configuarations/databaseConfig';
 
 export const client = new Pool({
-  host: POSTGRES_HOST,
-  database: POSTGRES_DB,
-  user: POSTGRES_USER,
-  password: POSTGRES_PASSWORD,
+  host: databaseConfig.host,
+  port: databaseConfig.port as unknown as number,
+  database: databaseConfig.database,
+  user: databaseConfig.username,
+  password: databaseConfig.password
 });
+
+export const applyParamQuery = async (sql: string, params: any) => {
+  const conn = await client.connect();
+  const result = await conn.query(sql, params);
+  conn.release();
+  return result;
+};
+
+export const applyQuery = async (sql: string) => {
+  const conn = await client.connect();
+  const result = await conn.query(sql);
+  conn.release();
+  return result;
+};

@@ -1,62 +1,41 @@
-/* eslint-disable prettier/prettier */
-import { client } from "../database";
+/* eslint-disable class-methods-use-this */
+import { applyQuery, applyParamQuery } from '../database';
 
-export interface Product {
-  product_name: string;
+export type Product = {
+  id: Number;
+  name: string;
   price: number;
-}
-
-export interface FullProduct extends Product {
-  id: number;
-}
+};
 
 export class ProductStore {
-  async index(): Promise<FullProduct[]> {
+  async index(): Promise<Product[]> {
     try {
-      const conn = await client.connect();
-      const sql = `SELECT * FROM products;`;
-      const result = await conn.query(sql);
-      conn.release();
+      const sql = 'SELECT * FROM products';
+      const result = await applyQuery(sql);
       return result.rows;
     } catch (err) {
-      throw new Error(`Cannot get products ${err}`);
+      throw new Error(`Products could not be found. Error: ${err}`);
     }
   }
 
-  async show(productId: number): Promise<FullProduct> {
+  async show(id: number): Promise<Product> {
     try {
-      const conn = await client.connect();
-      const sql = `SELECT * FROM products WHERE id=$1;`;
-      const result = await conn.query(sql, [productId]);
-      conn.release();
+      const sql = 'SELECT * FROM products WHERE id=($1)';
+      const result = await applyParamQuery(sql, [id]);
       return result.rows[0];
     } catch (err) {
-      throw new Error(`Product with this ID could not be found. Error ${err}`);
+      throw new Error(`Could not find the specified product. Error: ${err}`);
     }
   }
 
-  async create(p: Product): Promise<FullProduct> {
+  async create(name: string, price: number): Promise<Product> {
     try {
-      const { product_name, price } = p;
-      const conn = await client.connect();
-      const sql = `INSERT INTO products(product_name, price) VALUES($1, $2) RETURNING *;`;
-      const result = await conn.query(sql, [product_name, price]);
-      conn.release();
+      const sql =
+        'INSERT INTO products (name, price) VALUES($1, $2) RETURNING *';
+      const result = await applyParamQuery(sql, [name, price]);
       return result.rows[0];
     } catch (err) {
       throw new Error(`Product could not be created. Error: ${err}`);
-    }
-  }
-
-  async delete(id: number): Promise<FullProduct> {
-    try {
-      const sql = "DELETE FROM products WHERE id=($1)";
-      const conn = await client.connect();
-      const result = await conn.query(sql, [id]);
-      conn.release();
-      return result.rows[0];
-    } catch (err) {
-      throw new Error(`Could not delete product ${id}. ${err}`);
     }
   }
 }

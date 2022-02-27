@@ -1,113 +1,91 @@
-import supertest from "supertest";
-import jwt, { Secret } from "jsonwebtoken";
+import supertest from 'supertest';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
-import { app } from "../../server";
-import { User } from "../../models/user";
+import app from '../../server';
+import appConfig from '../../configuarations/appConfig';
 
 const request = supertest(app);
-const SECRET = process.env.TOKEN_SECRET as Secret;
+let userId: string | number;
+let token: string = '';
 
-describe("User Handler", () => {
-  const userData: User = {
-    firstname: "Hans",
-    lastname: "Meier",
-    user_password: "password123",
-  };
-
-  let token: string,
-    userId: number = 1;
-
-  it("should require authorization on every endpoint", (done) => {
-    request.get("/users").then((res) => {
-      expect(res.status).toBe(401);
-      done();
+describe('User Handler', () => {
+  it('Should create or add a new user', async () => {
+    const result = await request.post('/users').send({
+      firstname: 'marwan',
+      lastname: 'abdelrady',
+      password: 'password'
     });
+    token = result.body;
+    const decoded = jwt.verify(token, appConfig.secret as string) as {
+      us: { id: number; firstname: string; lastname: string };
+    };
+    const { id, ...userData } = decoded.us;
+    userId = id;
 
-    request.get(`/users/${userId}`).then((res) => {
-      expect(res.status).toBe(401);
-      done();
-    });
-
-    request.delete(`/users/${userId}`).then((res) => {
-      expect(res.status).toBe(401);
-      done();
+    expect(userData).toEqual({
+      firstname: 'marwan',
+      lastname: 'abdelrady'
     });
   });
 
-  it("gets the create endpoint", (done) => {
-    request
-      .post("/users")
-      .send(userData)
-      .then((res) => {
-        const { body, status } = res;
-        token = body;
-
-        // @ts-ignore
-        const { user } = jwt.verify(token, SECRET);
-        userId = user.id;
-
-        expect(status).toBe(200);
-        done();
-      });
-  });
-
-  it("gets the index endpoint", (done) => {
-    request
-      .get("/users")
-      .set("Authorization", "bearer " + token)
-      .then((res) => {
-        expect(res.status).toBe(200);
-        done();
-      });
-  });
-
-  it("gets the read endpoint", (done) => {
-    request
+  it('Should display a user by their id', async () => {
+    const result = await request
       .get(`/users/${userId}`)
-      .set("Authorization", "bearer " + token)
-      .then((res) => {
-        expect(res.status).toBe(200);
-        done();
-      });
+      .set('Authorization', `Bearer ${token}`);
+    const comparePassword = bcrypt.compareSync(
+      `password${appConfig.pass}`,
+      result.body.password
+    );
+    expect(comparePassword).toEqual(true);
+    expect(result.body).toEqual({
+      id: userId,
+      firstname: 'marwan',
+      lastname: 'abdelrady',
+      password: result.body.password
+    });
   });
 
-  it("gets the auth endpoint", (done) => {
-    request
-      .post("/users/auth")
+  it('Should display user orders', async () => {
+    let product: { id: number };
+
+    await request
+      .post('/products')
+      .set('Authorization', `Bearer ${token}`)
       .send({
-        firstname: userData.firstname,
-        lastname: userData.lastname,
-        user_password: userData.user_password,
+        name: 'alpha',
+        price: 100,
+        category: 'beta'
       })
-      .set("Authorization", "bearer " + token)
-      .then((res) => {
-        expect(res.status).toBe(200);
-        done();
+      .then((response) => {
+        product = response.body;
+      })
+      .then(() => {
+        request
+          .post('/orders')
+          .set('Authorization', `Bearer ${token}`)
+          .send({
+            status: 'active',
+            user_id: userId,
+            order_products: [
+              {
+                product_id: product.id,
+                quantity: 1
+              }
+            ]
+          });
       });
+
+    const response = await request
+      .get(`/users/orders/${userId}`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(response.status).toEqual(200);
   });
 
-  it("gets the auth endpoint with wrong user_password", (done) => {
-    request
-      .post("/users/auth")
-      .send({
-        firstname: userData.firstname,
-        lastname: userData.lastname,
-        user_password: "falsepassword",
-      })
-      .set("Authorization", "bearer " + token)
-      .then((res) => {
-        expect(res.status).toBe(401);
-        done();
-      });
-  });
-
-  it("gets the delete endpoint", (done) => {
-    request
-      .delete(`/users/${userId}`)
-      .set("Authorization", "bearer " + token)
-      .then((res) => {
-        expect(res.status).toBe(200);
-        done();
-      });
+  it('Displays users with no valid tokens', async () => {
+    const result = await request
+      .get(`/users`)
+      .set('Authorization', `InValidToken`);
+    expect(result.status).toBe(401);
   });
 });

@@ -1,99 +1,63 @@
-import supertest from "supertest";
-import jwt from "jsonwebtoken";
+import supertest from 'supertest';
+import jwt from 'jsonwebtoken';
 
-import { app } from "../../server";
-import { Order } from "../../models/order";
-import { User } from "../../models/user";
-import { Product } from "../../models/product";
+import { User } from '../../models/user';
+import app from '../../server';
+import { Product } from '../../models/product';
+import appConfig from '../../configuarations/appConfig';
 
 const request = supertest(app);
+let user: User;
+let product: Product;
+let token: string = '';
 
-describe("Order Handler", () => {
-  let token: string,
-    order: Order,
-    user_id: number,
-    product_id: number,
-    order_id: number;
+beforeAll(async () => {
+  await request
+    .post('/users')
+    .send({
+      firstName: 'marwan',
+      lastName: 'abdelrady',
+      password: 'password'
+    })
+    .then((response) => {
+      token = response.body;
+      const decoded = jwt.verify(token, appConfig.secret as string) as {
+        us: {
+          id: number;
+          firstname: string;
+          lastname: string;
+          password: string;
+        };
+      };
+      user = decoded.us;
+    });
+  await request
+    .post('/products')
+    .set('Authorization', `Bearer ${token}`)
+    .send({
+      name: 'alpha',
+      price: 100
+    })
+    .then((response) => {
+      product = response.body;
+    });
+});
 
-  beforeAll(async () => {
-    const userData: User = {
-      firstname: "Order",
-      lastname: "Tester",
-      user_password: "password123",
-    };
-    const productData: Product = {
-      product_name: "CodeMaster 199",
-      price: 199,
-    };
-
-    const { body: userBody } = await request.post("/users").send(userData);
-
-    token = userBody;
-
-    // @ts-ignore
-    const { user } = jwt.verify(token, process.env.TOKEN_SECRET);
-    user_id = user.id;
-
-    const { body: productBody } = await request
-      .post("/products")
-      .set("Authorization", "bearer " + token)
-      .send(productData);
-    product_id = productBody.id;
-
-    order = {
-      products: [
-        {
-          product_id,
-          product_quantity: 5,
-        },
-      ],
-      user_id,
-      order_status: "complete",
-    };
-  });
-
-  afterAll(async () => {
-    await request
-      .delete(`/users/${user_id}`)
-      .set("Authorization", "bearer " + token);
-    await request
-      .delete(`/products/${product_id}`)
-      .set("Authorization", "bearer " + token);
-  });
-
-  it("gets the create endpoint", (done) => {
-    request
-      .post("/orders")
-      .send(order)
-      .set("Authorization", "bearer " + token)
-      .then((res) => {
-        const { body, status } = res;
-
-        expect(status).toBe(200);
-
-        order_id = body.id;
-
-        done();
+describe('Order Handler', () => {
+  it('Should add a new order of prducts', async () => {
+    const response = await request
+      .post('/orders')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        status: 'active',
+        user_id: user.id,
+        order_products: [
+          {
+            product_id: product.id,
+            quantity: 1
+          }
+        ]
       });
-  });
-
-  it("gets the order by user id endpoint", (done) => {
-    request
-      .get(`/orders/${user_id}`)
-      .set("Authorization", "bearer " + token)
-      .then((res) => {
-        expect(res.status).toBe(200);
-        done();
-      });
-  });
-
-  it("gets the delete endpoint", (done) => {
-    request
-      .delete(`/orders/${order_id}`)
-      .set("Authorization", "bearer " + token)
-      .then((res) => {
-        expect(res.status).toBe(200);
-        done();
-      });
+    expect(response.status).toEqual(200);
   });
 });

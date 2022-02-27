@@ -1,25 +1,29 @@
-import express, { Request, Response } from "express";
-import bodyParser from "body-parser";
-import cors from "cors";
-import productRoute from "./handlers/productHandler";
-import userRoute from "./handlers/userHandler";
-import orderRoute from "./handlers/orderHandler";
+import express, { Application, Request, Response } from 'express';
+import bodyParser from 'body-parser';
 
-export const app: express.Application = express();
-const address = "0.0.0.0:3000";
+import appConfig from './configuarations/appConfig';
 
-app.use(cors());
+import userRoutes from './handlers/userHandler';
+import orderRoutes from './handlers/orderHandler';
+import productRoutes from './handlers/productHandler';
+
+const PORT = appConfig.port || 3000;
+
+const app: Application = express();
 app.use(bodyParser.json());
 
-app.get("/", function (req: Request, res: Response) {
-  res.send("Hello World!");
-  console.log(req.body);
+app.get('/', (req: Request, res: Response) => {
+  res.json({
+    message: 'Hello World!'
+  });
 });
 
-productRoute(app);
-userRoute(app);
-orderRoute(app);
+userRoutes(app);
+productRoutes(app);
+orderRoutes(app);
 
-app.listen(3000, function () {
-  console.log(`starting app on: ${address}`);
+app.listen(PORT, () => {
+  console.log(`Server is starting at port: ${PORT}`);
 });
+
+export default app;

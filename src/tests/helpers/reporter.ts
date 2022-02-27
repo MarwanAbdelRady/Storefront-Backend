@@ -1,10 +1,9 @@
-"use strict";
-
+/* eslint-disable */
 import {
   DisplayProcessor,
   SpecReporter,
-  StacktraceOption,
-} from "jasmine-spec-reporter";
+  StacktraceOption
+} from 'jasmine-spec-reporter';
 import SuiteInfo = jasmine.SuiteInfo;
 
 class CustomProcessor extends DisplayProcessor {
@@ -15,11 +14,13 @@ class CustomProcessor extends DisplayProcessor {
 
 jasmine.getEnv().clearReporters();
 jasmine.getEnv().addReporter(
-  //@ts-ignore
   new SpecReporter({
-    spec: {
-      displayStacktrace: StacktraceOption.NONE,
+    suite: {
+      displayNumber: true
     },
-    customProcessors: [CustomProcessor],
+    spec: {
+      displayStacktrace: StacktraceOption.NONE
+    },
+    customProcessors: [CustomProcessor]
   })
 );

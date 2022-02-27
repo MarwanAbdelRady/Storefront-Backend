@@ -8,96 +8,129 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserStore = void 0;
-/* eslint-disable prettier/prettier */
-const database_1 = require("../database");
-const bcrypt_1 = __importDefault(require("bcrypt"));
-class UserStore {
-    index() {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const conn = yield database_1.client.connect();
-                const sql = `SELECT * FROM users;`;
-                const result = yield conn.query(sql);
-                conn.release();
-                return result.rows;
-            }
-            catch (err) {
-                throw new Error(`Cannot get users ${err}`);
-            }
-        });
+/* eslint-disable class-methods-use-this */
+var bcrypt_1 = __importDefault(require("bcrypt"));
+var database_1 = require("../database");
+var appConfig_1 = __importDefault(require("../configuarations/appConfig"));
+var SALT_ROUNDS = appConfig_1.default.salt;
+var BCRYPT_PASSWORD = appConfig_1.default.pass;
+var UserStore = /** @class */ (function () {
+    function UserStore() {
     }
-    show(userId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const conn = yield database_1.client.connect();
-                const sql = `SELECT * FROM users WHERE id=$1;`;
-                const result = yield conn.query(sql, [userId]);
-                conn.release();
-                return result.rows[0];
-            }
-            catch (err) {
-                throw new Error(`User with this ID could not be found. Error ${err}`);
-            }
-        });
-    }
-    create(u) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const { firstname, lastname, user_password } = u;
-                const conn = yield database_1.client.connect();
-                const sql = `INSERT INTO users (firstname, lastname, user_password) VALUES($1, $2, $3) RETURNING *`;
-                const hash = bcrypt_1.default.hashSync(user_password + database_1.process.env.BCRYPT_PASSWORD, parseInt(database_1.process.env.SALT_ROUNDS, 10));
-                const { rows } = yield conn.query(sql, [firstname, lastname, hash]);
-                conn.release();
-                // if (result.rows[0] === undefined) {
-                //   throw new Error("undefined user");
-                // }
-                return rows[0];
-            }
-            catch (err) {
-                throw new Error(`User could not be created. Error: ${err}`);
-            }
-        });
-    }
-    delete(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const sql = "DELETE FROM users WHERE id=($1)";
-                const conn = yield database_1.client.connect();
-                yield conn.query(sql, [id]);
-                conn.release();
-                return true;
-            }
-            catch (err) {
-                throw new Error(`Could not delete user ${id}. ${err}`);
-            }
-        });
-    }
-    authenticateUser(firstname, lastname, user_password) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                // const { firstname, lastname, user_password } = u;
-                const sql = "SELECT * FROM users WHERE firstname=($1) AND lastname=($2);";
-                const connection = yield database_1.client.connect();
-                const { rows } = yield connection.query(sql, [firstname, lastname]);
-                if (rows.length > 0) {
-                    const user = rows[0];
-                    if (bcrypt_1.default.compareSync(user_password + database_1.process.env.BCRYPT_PASSWORD, user.user_password)) {
-                        return user;
-                    }
+    UserStore.prototype.index = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var sql, result, err_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        sql = 'SELECT * FROM users';
+                        return [4 /*yield*/, (0, database_1.applyQuery)(sql)];
+                    case 1:
+                        result = _a.sent();
+                        return [2 /*return*/, result.rows];
+                    case 2:
+                        err_1 = _a.sent();
+                        throw new Error("Users could not be found. Error: ".concat(err_1));
+                    case 3: return [2 /*return*/];
                 }
-                connection.release();
-                return null;
-            }
-            catch (err) {
-                throw new Error(`Could not find user ${firstname}. ${err}`);
-            }
+            });
         });
-    }
-}
+    };
+    UserStore.prototype.show = function (id) {
+        return __awaiter(this, void 0, void 0, function () {
+            var sql, result, err_2;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        sql = 'SELECT * FROM users WHERE id=($1)';
+                        return [4 /*yield*/, (0, database_1.applyParamQuery)(sql, [id])];
+                    case 1:
+                        result = _a.sent();
+                        return [2 /*return*/, result.rows[0]];
+                    case 2:
+                        err_2 = _a.sent();
+                        throw new Error("Couldn't find user. Error: ".concat(err_2));
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    UserStore.prototype.create = function (firstName, lastName, password) {
+        return __awaiter(this, void 0, void 0, function () {
+            var salt, hash, sql, result, err_3;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        salt = SALT_ROUNDS ? Number(SALT_ROUNDS) : 10;
+                        hash = bcrypt_1.default.hashSync(password + BCRYPT_PASSWORD, salt);
+                        sql = 'INSERT INTO users (firstName, lastName, password) VALUES($1, $2, $3) RETURNING *';
+                        return [4 /*yield*/, (0, database_1.applyParamQuery)(sql, [firstName, lastName, hash])];
+                    case 1:
+                        result = _a.sent();
+                        return [2 /*return*/, result.rows[0]];
+                    case 2:
+                        err_3 = _a.sent();
+                        throw new Error("User could not be created. Error: ".concat(err_3));
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    UserStore.prototype.getOrdersByUserId = function (userId) {
+        return __awaiter(this, void 0, void 0, function () {
+            var sql, result, err_4;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        sql = "SELECT orders.id, orders.status, order_products.quantity\n        FROM orders\n        JOIN order_products ON orders.id = order_products.order_id\n        where orders.user_id = ($1) and orders.status = 'active'";
+                        return [4 /*yield*/, (0, database_1.applyParamQuery)(sql, [userId])];
+                    case 1:
+                        result = _a.sent();
+                        return [2 /*return*/, result.rows];
+                    case 2:
+                        err_4 = _a.sent();
+                        throw new Error("Couldn't get orders. Error: ".concat(err_4));
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    return UserStore;
+}());
 exports.UserStore = UserStore;
