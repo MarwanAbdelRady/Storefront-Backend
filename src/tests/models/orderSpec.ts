@@ -1,15 +1,20 @@
-import { OrderStore } from '../../models/order';
+import { Order, OrderStore } from '../../models/order';
 
-const order = new OrderStore();
+const os = new OrderStore();
+let order: Order;
 
 describe('Order Model', () => {
-  it('should have a create method', () => {
-    expect(order.create).toBeDefined();
+  it('Should have a create method', () => {
+    expect(os.create).toBeDefined();
   });
 
-  // it('create method should create new order with new associated order_product', async () => {
-  //   const orderProduct = { product_id: 1, quantity: 1 };
-  //   const result = await order.create('active', 2, [orderProduct]);
-  //   expect(result).toEqual([]);
-  // });
+  it('Should create a new order', async () => {
+    const orderProduct = { product_id: 1, quantity: 1 };
+    order = await os.create('complete', 3, [orderProduct]);
+    expect(order).toEqual({
+      id: order.id,
+      status: 'complete',
+      user_id: 3
+    });
+  });
 });

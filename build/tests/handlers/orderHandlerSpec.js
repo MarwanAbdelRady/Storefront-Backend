@@ -53,8 +53,8 @@ beforeAll(function () { return __awaiter(void 0, void 0, void 0, function () {
             case 0: return [4 /*yield*/, request
                     .post('/users')
                     .send({
-                    firstName: 'marwan',
-                    lastName: 'abdelrady',
+                    firstname: 'marwan',
+                    lastname: 'abdelrady',
                     password: 'password'
                 })
                     .then(function (response) {
@@ -81,7 +81,7 @@ beforeAll(function () { return __awaiter(void 0, void 0, void 0, function () {
     });
 }); });
 describe('Order Handler', function () {
-    it('Should add a new order of prducts', function () { return __awaiter(void 0, void 0, void 0, function () {
+    it('Should add a new order of products', function () { return __awaiter(void 0, void 0, void 0, function () {
         var response;
         return __generator(this, function (_a) {
             switch (_a.label) {
@@ -90,7 +90,7 @@ describe('Order Handler', function () {
                         .set('Authorization', "Bearer ".concat(token))
                         .send({
                         status: 'active',
-                        user_id: user.id,
+                        userId: user.id,
                         order_products: [
                             {
                                 product_id: product.id,

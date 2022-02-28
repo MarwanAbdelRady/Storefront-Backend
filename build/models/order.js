@@ -48,12 +48,12 @@ var OrderStore = /** @class */ (function () {
     }
     OrderStore.prototype.create = function (status, userId, orderProducts) {
         return __awaiter(this, void 0, void 0, function () {
-            var sql, result_1, orderProductsData, addOrderProducts, err_1;
+            var sql, result_1, orderProductsData, err_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 3, , 4]);
-                        sql = 'INSERT INTO orders (status, user_id) VALUES($1, $2) RETURNING id';
+                        sql = 'INSERT INTO orders (status, user_id) VALUES($1, $2) RETURNING *';
                         return [4 /*yield*/, (0, database_1.applyParamQuery)(sql, [status, userId])];
                     case 1:
                         result_1 = _a.sent();
@@ -64,8 +64,8 @@ var OrderStore = /** @class */ (function () {
                         ]; });
                         return [4 /*yield*/, (0, database_1.applyQuery)((0, pg_format_1.default)('INSERT INTO order_products (product_id, quantity, order_id) VALUES %L', orderProductsData))];
                     case 2:
-                        addOrderProducts = _a.sent();
-                        return [2 /*return*/, addOrderProducts.rows];
+                        _a.sent();
+                        return [2 /*return*/, result_1.rows[0]];
                     case 3:
                         err_1 = _a.sent();
                         throw new Error("Order could not be created. Error: ".concat(err_1));

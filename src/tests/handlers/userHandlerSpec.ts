@@ -54,8 +54,7 @@ describe('User Handler', () => {
       .set('Authorization', `Bearer ${token}`)
       .send({
         name: 'alpha',
-        price: 100,
-        category: 'beta'
+        price: 100
       })
       .then((response) => {
         product = response.body;

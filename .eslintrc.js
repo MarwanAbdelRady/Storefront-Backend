@@ -20,7 +20,6 @@ module.exports = {
   },
 
   rules: {
-    semi: ['error', 'never'],
     'no-console': 'off',
     'no-use-before-define': ['error', { functions: true, classes: true }],
     'no-var': 'error',
@@ -43,4 +42,4 @@ module.exports = {
       }
     ]
   }
-}
+};

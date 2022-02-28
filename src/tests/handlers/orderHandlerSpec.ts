@@ -15,8 +15,8 @@ beforeAll(async () => {
   await request
     .post('/users')
     .send({
-      firstName: 'marwan',
-      lastName: 'abdelrady',
+      firstname: 'marwan',
+      lastname: 'abdelrady',
       password: 'password'
     })
     .then((response) => {
@@ -44,13 +44,13 @@ beforeAll(async () => {
 });
 
 describe('Order Handler', () => {
-  it('Should add a new order of prducts', async () => {
+  it('Should add a new order of products', async () => {
     const response = await request
       .post('/orders')
       .set('Authorization', `Bearer ${token}`)
       .send({
         status: 'active',
-        user_id: user.id,
+        userId: user.id,
         order_products: [
           {
             product_id: product.id,

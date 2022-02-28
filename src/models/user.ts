@@ -2,6 +2,7 @@
 import bcrypt from 'bcrypt';
 import { applyQuery, applyParamQuery } from '../database';
 import appConfig from '../configuarations/appConfig';
+import { Order } from './order';
 
 export type User = {
   id: Number;
@@ -51,9 +52,7 @@ export class UserStore {
     }
   }
 
-  async getOrdersByUserId(
-    userId: number
-  ): Promise<{ id: Number; status: string; product_quantity: number }[]> {
+  async getOrdersByUserId(userId: number): Promise<Order> {
     try {
       const sql = `SELECT orders.id, orders.status, order_products.quantity
         FROM orders
@@ -61,7 +60,7 @@ export class UserStore {
         where orders.user_id = ($1) and orders.status = 'active'`;
 
       const result = await applyParamQuery(sql, [userId]);
-      return result.rows;
+      return result.rows[0];
     } catch (err) {
       throw new Error(`Couldn't get orders. Error: ${err}`);
     }

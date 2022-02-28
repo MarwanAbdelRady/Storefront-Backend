@@ -50,11 +50,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+/* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
 var bcrypt_1 = __importDefault(require("bcrypt"));
 var appConfig_1 = __importDefault(require("../../configuarations/appConfig"));
 var user_1 = require("../../models/user");
+var order_1 = require("../../models/order");
 var us = new user_1.UserStore();
+var os = new order_1.OrderStore();
 var user;
 describe('User Model', function () {
     it('Should have an index method', function () {
@@ -66,20 +69,23 @@ describe('User Model', function () {
     it('Should have a create method', function () {
         expect(us.create).toBeDefined();
     });
+    it('Should have a get orders by user id method', function () {
+        expect(us.getOrdersByUserId).toBeDefined();
+    });
     it('Should create a new user', function () { return __awaiter(void 0, void 0, void 0, function () {
-        var comparePassword, id, testUser;
+        var comparePassword, id, userData;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, us.create('Marwan', 'Abdelrady', 'password')];
+                case 0: return [4 /*yield*/, us.create('marwan', 'abdelrady', 'password')];
                 case 1:
                     user = _a.sent();
                     comparePassword = bcrypt_1.default.compareSync("password".concat(appConfig_1.default.pass), user.password);
                     expect(comparePassword).toEqual(true);
-                    id = user.id, testUser = __rest(user, ["id"]);
-                    expect(testUser).toEqual({
-                        firstname: 'Marwan',
-                        lastname: 'Abdelrady',
-                        password: testUser.password
+                    id = user.id, userData = __rest(user, ["id"]);
+                    expect(userData).toEqual({
+                        firstname: 'marwan',
+                        lastname: 'abdelrady',
+                        password: userData.password
                     });
                     return [2 /*return*/];
             }
@@ -97,8 +103,20 @@ describe('User Model', function () {
             }
         });
     }); });
-    it('Should return a list of users', function () { return __awaiter(void 0, void 0, void 0, function () {
-        var i, result;
+    // it('Should return a list of users', async () => {
+    //   for (let i = 0; i < 4; i++) {
+    //     await us.create('marwan', 'abdelrady', 'password');
+    //   }
+    //   const result = await us.index();
+    //   result.forEach((newUser) => {
+    //     const { id, ...userData } = newUser;
+    //     expect(userData.firstname).toBeDefined();
+    //     expect(userData.lastname).toBeDefined();
+    //     expect(userData.password).toBeDefined();
+    //   });
+    // });
+    it('Should return a list of the correct users', function () { return __awaiter(void 0, void 0, void 0, function () {
+        var i, result, comparePassword;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -106,7 +124,7 @@ describe('User Model', function () {
                     _a.label = 1;
                 case 1:
                     if (!(i < 4)) return [3 /*break*/, 4];
-                    return [4 /*yield*/, us.create('Marwan', 'Abdelrady', 'password')];
+                    return [4 /*yield*/, us.create('marwan', 'abdelrady', 'password')];
                 case 2:
                     _a.sent();
                     _a.label = 3;
@@ -116,12 +134,32 @@ describe('User Model', function () {
                 case 4: return [4 /*yield*/, us.index()];
                 case 5:
                     result = _a.sent();
-                    result.forEach(function (newUser) {
-                        var id = newUser.id, userData = __rest(newUser, ["id"]);
-                        expect(userData.firstname).toBeDefined();
-                        expect(userData.lastname).toBeDefined();
-                        expect(userData.password).toBeDefined();
+                    comparePassword = bcrypt_1.default.compareSync("password".concat(appConfig_1.default.pass), user.password);
+                    result.forEach(function (user1) {
+                        var id = user1.id, userData = __rest(user1, ["id"]);
+                        expect(userData.firstname).toEqual('marwan');
+                        expect(userData.lastname).toEqual('abdelrady');
+                        expect(comparePassword).toEqual(true);
                     });
+                    return [2 /*return*/];
+            }
+        });
+    }); });
+    it('Should get an active order by user id', function () { return __awaiter(void 0, void 0, void 0, function () {
+        var orderProduct, order, id, orderData;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    orderProduct = { product_id: 1, quantity: 1 };
+                    return [4 /*yield*/, os.create('active', 1, [orderProduct])];
+                case 1:
+                    order = _a.sent();
+                    return [4 /*yield*/, us.getOrdersByUserId(1)];
+                case 2:
+                    _a.sent();
+                    id = order.id, orderData = __rest(order, ["id"]);
+                    expect(orderData.user_id).toEqual(1);
+                    expect(orderData.status).toEqual('active');
                     return [2 /*return*/];
             }
         });

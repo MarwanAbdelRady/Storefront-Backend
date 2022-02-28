@@ -5,7 +5,7 @@ import { applyQuery, applyParamQuery } from '../database';
 
 export type Order = {
   id: Number;
-  userId: Number;
+  user_id: Number;
   status: string;
 };
 
@@ -20,10 +20,10 @@ export class OrderStore {
     status: string,
     userId: number,
     orderProducts: OrderProducts[]
-  ): Promise<OrderProducts[]> {
+  ): Promise<Order> {
     try {
       const sql =
-        'INSERT INTO orders (status, user_id) VALUES($1, $2) RETURNING id';
+        'INSERT INTO orders (status, user_id) VALUES($1, $2) RETURNING *';
       const result = await applyParamQuery(sql, [status, userId]);
 
       const orderProductsData = orderProducts.map((orderProduct) => [
@@ -32,13 +32,13 @@ export class OrderStore {
         result.rows[0].id
       ]);
 
-      const addOrderProducts = await applyQuery(
+      await applyQuery(
         format(
           'INSERT INTO order_products (product_id, quantity, order_id) VALUES %L',
           orderProductsData
         )
       );
-      return addOrderProducts.rows;
+      return result.rows[0];
     } catch (err) {
       throw new Error(`Order could not be created. Error: ${err}`);
     }

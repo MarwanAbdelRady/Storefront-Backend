@@ -122,7 +122,7 @@ var UserStore = /** @class */ (function () {
                         return [4 /*yield*/, (0, database_1.applyParamQuery)(sql, [userId])];
                     case 1:
                         result = _a.sent();
-                        return [2 /*return*/, result.rows];
+                        return [2 /*return*/, result.rows[0]];
                     case 2:
                         err_4 = _a.sent();
                         throw new Error("Couldn't get orders. Error: ".concat(err_4));

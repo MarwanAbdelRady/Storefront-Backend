@@ -112,8 +112,7 @@ describe('User Handler', function () {
                         .set('Authorization', "Bearer ".concat(token))
                         .send({
                         name: 'alpha',
-                        price: 100,
-                        category: 'beta'
+                        price: 100
                     })
                         .then(function (response) {
                         product = response.body;

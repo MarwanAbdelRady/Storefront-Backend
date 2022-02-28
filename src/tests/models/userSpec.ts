@@ -1,9 +1,12 @@
+/* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
 import bcrypt from 'bcrypt';
 import appConfig from '../../configuarations/appConfig';
 import { User, UserStore } from '../../models/user';
+import { OrderStore } from '../../models/order';
 
 const us = new UserStore();
+const os = new OrderStore();
 let user: User;
 
 describe('User Model', () => {
@@ -19,18 +22,22 @@ describe('User Model', () => {
     expect(us.create).toBeDefined();
   });
 
+  it('Should have a get orders by user id method', () => {
+    expect(us.getOrdersByUserId).toBeDefined();
+  });
+
   it('Should create a new user', async () => {
-    user = await us.create('Marwan', 'Abdelrady', 'password');
+    user = await us.create('marwan', 'abdelrady', 'password');
     const comparePassword = bcrypt.compareSync(
       `password${appConfig.pass}`,
       user.password
     );
     expect(comparePassword).toEqual(true);
-    const { id, ...testUser } = user;
-    expect(testUser).toEqual({
-      firstname: 'Marwan',
-      lastname: 'Abdelrady',
-      password: testUser.password
+    const { id, ...userData } = user;
+    expect(userData).toEqual({
+      firstname: 'marwan',
+      lastname: 'abdelrady',
+      password: userData.password
     });
   });
 
@@ -39,17 +46,28 @@ describe('User Model', () => {
     expect(result).toEqual(user);
   });
 
-  it('Should return a list of users', async () => {
+  it('Should return a list of the correct users', async () => {
     for (let i = 0; i < 4; i++) {
-      await us.create('Marwan', 'Abdelrady', 'password');
+      await us.create('marwan', 'abdelrady', 'password');
     }
     const result = await us.index();
-
-    result.forEach((newUser) => {
-      const { id, ...userData } = newUser;
-      expect(userData.firstname).toBeDefined();
-      expect(userData.lastname).toBeDefined();
-      expect(userData.password).toBeDefined();
+    const comparePassword = bcrypt.compareSync(
+      `password${appConfig.pass}`,
+      user.password
+    );
+    result.forEach((user1) => {
+      const { id, ...userData } = user1;
+      expect(userData.firstname).toEqual('marwan');
+      expect(userData.lastname).toEqual('abdelrady');
+      expect(comparePassword).toEqual(true);
     });
+  });
+  it('Should get an active order by user id', async () => {
+    const orderProduct = { product_id: 1, quantity: 1 };
+    const order = await os.create('active', 1, [orderProduct]);
+    await us.getOrdersByUserId(1);
+    const { id, ...orderData } = order;
+    expect(orderData.user_id).toEqual(1);
+    expect(orderData.status).toEqual('active');
   });
 });
